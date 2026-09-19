@@ -1,0 +1,41 @@
+## .NET Core & C#
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+TestResults/
+*.trx
+
+## User Secrets & AppSettings Local
+appsettings.Development.json
+secrets.json
+
+## EF Core & Database
+*.db
+*.sqlite
+
+## Next.js & Node.js
+node_modules/
+.next/
+out/
+build/
+dist/
+.npm
+*.log
+.env
+.env*.local
+
+## OS Specific
+.DS_Store
+Thumbs.db

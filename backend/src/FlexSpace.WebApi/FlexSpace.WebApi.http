@@ -1,0 +1,6 @@
+@FlexSpace.WebApi_HostAddress = http://localhost:5292
+
+GET {{FlexSpace.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
