@@ -25,6 +25,7 @@ namespace FlexSpace.Infrastructure
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
             services.AddScoped<ISpaceRepository, SpaceRepository>();
             services.AddScoped<ISpaceQueryService, SpaceQueryService>();
+            services.AddScoped<IBookingRepository, BookingRepository>();
 
             return services;
         }

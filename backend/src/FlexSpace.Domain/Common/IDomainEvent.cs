@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediatR;
 
 namespace FlexSpace.Domain.Common
 {
-    public interface IDomainEvent
+    public interface IDomainEvent : INotification
     {
         DateTime OccurredOnUtc { get; }
     }
