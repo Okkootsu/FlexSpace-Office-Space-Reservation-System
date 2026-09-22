@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FlexSpace.Application.Features.Bookings.Commands.CancelBooking;
 using FlexSpace.Application.Features.Bookings.Commands.CreateBooking;
+using FlexSpace.Application.Features.Bookings.Queries.GetUserBookings;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,16 @@ namespace FlexSpace.WebApi.Controllers
         public BookingsController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [HttpGet("my-bookings")]
+        [ProducesResponseType(typeof(IReadOnlyList<BookingDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMyBookings([FromQuery] Guid guestId, CancellationToken cancellationToken)
+        {
+            var query = new GetUserBookingsQuery(guestId);
+            var bookings = await _mediator.Send(query, cancellationToken);
+            
+            return Ok(bookings);
         }
 
         [HttpPost]
