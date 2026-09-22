@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FlexSpace.Application.Features.Bookings.Commands.CancelBooking;
 using FlexSpace.Application.Features.Bookings.Commands.CreateBooking;
+using FlexSpace.Application.Features.Bookings.Queries.GetUserBookings;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +21,16 @@ namespace FlexSpace.WebApi.Controllers
             _mediator = mediator;
         }
 
+        [HttpGet("my-bookings")]
+        [ProducesResponseType(typeof(IReadOnlyList<BookingDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMyBookings([FromQuery] Guid guestId, CancellationToken cancellationToken)
+        {
+            var query = new GetUserBookingsQuery(guestId);
+            var bookings = await _mediator.Send(query, cancellationToken);
+            
+            return Ok(bookings);
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -28,6 +40,18 @@ namespace FlexSpace.WebApi.Controllers
             var bookingId = await _mediator.Send(command, cancellationToken);
 
             return CreatedAtAction(nameof(Create), new { id = bookingId }, bookingId);
+        }
+
+        [HttpDelete("{id:guid}/cancel")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Cancel([FromRoute] Guid id, [FromQuery] Guid guestId, CancellationToken cancellationToken)
+        {
+            var command = new CancelBookingCommand(id, guestId);
+            await _mediator.Send(command, cancellationToken);
+            
+            return NoContent();
         }
     }
 }

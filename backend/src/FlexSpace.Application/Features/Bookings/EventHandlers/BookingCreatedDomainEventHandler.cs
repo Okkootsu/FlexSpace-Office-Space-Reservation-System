@@ -20,7 +20,7 @@ namespace FlexSpace.Application.Features.Bookings.EventHandlers
         public Task Handle(BookingCreatedDomainEvent notification, CancellationToken cancellationToken)
         {
             _logger.LogInformation(
-                "[EVENT]: Yeni bir rezervasyon oluşturuldu! BookingId: {BookingId}, MekanId: {SpaceId}, MisafirId: {GuestId}. Zaman: {OccurredOnUtc}",
+                "[BİLDİRİM / OLUŞTURULDU]: Yeni bir rezervasyon oluşturuldu! BookingId: {BookingId}, MekanId: {SpaceId}, MisafirId: {GuestId}. Zaman: {OccurredOnUtc}",
                 notification.BookingId,
                 notification.SpaceId,
                 notification.GuestId,

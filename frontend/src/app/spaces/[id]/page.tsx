@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { spacesApi } from "@/features/spaces/api";
 import { MapPin, Users, CheckCircle, ShieldCheck, Wifi } from "lucide-react";
+import { BookingWidget } from "@/features/bookings/components/BookingWidget";
 
 interface SpaceDetailPageProps {
   params: Promise<{
@@ -98,7 +99,11 @@ export default async function SpaceDetailPage({ params }: SpaceDetailPageProps) 
 
         {/* Sağ Kolon: Rezervasyon Kartı */}
         <div className="lg:col-span-1">
-          Booking Widget Placeholder
+          <BookingWidget
+            spaceId={space.id}
+            hourlyPrice={space.hourlyPrice}
+            currency={space.currency}
+          />
         </div>
       </div>
     </div>
