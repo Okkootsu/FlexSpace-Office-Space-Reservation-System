@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Calendar, Clock, AlertCircle, CheckCircle2, Loader2, Zap, ShieldCheck } from "lucide-react";
 import { bookingsApi } from "../api";
 import { ApiError } from "@/lib/api-client";
 
@@ -68,8 +68,8 @@ export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetP
 
       setIsSuccess(true);
       setTimeout(() => {
-        router.refresh();
-      }, 2000);
+        router.push("/dashboard");
+      }, 1500);
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.errors) {
@@ -89,30 +89,28 @@ export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetP
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm sticky top-24">
-      <div className="flex items-baseline justify-between mb-6 pb-6 border-b border-slate-100">
+    <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-lg shadow-indigo-950/5 sticky top-24">
+      {/* Üst Fiyat ve Güvence */}
+      <div className="flex items-baseline justify-between mb-6 pb-5 border-b border-slate-100">
         <div>
-          <span className="text-2xl font-bold text-slate-900">{hourlyPrice} {currency}</span>
-          <span className="text-slate-500 text-sm"> / saat</span>
+          <span className="text-3xl font-black text-slate-900">{hourlyPrice} {currency}</span>
+          <span className="text-slate-400 text-sm font-medium"> / saat</span>
         </div>
-        <span className="text-xs bg-emerald-50 text-emerald-700 font-medium px-2.5 py-1 rounded-full border border-emerald-200">
-          Anında Onay
-        </span>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Tarih Seçimi */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            Tarih
+          <label htmlFor="booking-date" className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5 cursor-pointer">
+            Rezervasyon Tarihi
           </label>
           <input
+            id="booking-date"
             type="date"
             value={date}
             min={new Date().toISOString().split("T")[0]}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             required
           />
         </div>
@@ -120,58 +118,62 @@ export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetP
         {/* Saat Dilimi Seçimi */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              Başlangıç
+            <label htmlFor="booking-start-time" className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5 cursor-pointer">
+              Giriş Saati
             </label>
             <input
+              id="booking-start-time"
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              Bitiş
+            <label htmlFor="booking-end-time" className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5 cursor-pointer">
+              Çıkış Saati
             </label>
             <input
+              id="booking-end-time"
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               required
             />
           </div>
         </div>
 
-        {/* Fiyat Kırılımı */}
-        <div className="bg-slate-50 rounded-xl p-3 space-y-1.5 text-xs text-slate-600 my-4">
-          <div className="flex justify-between">
+        {/* Fiyat ve Süre Özeti */}
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2 text-xs text-slate-600 my-4">
+          <div className="flex justify-between items-center">
             <span>Seçilen Süre:</span>
-            <span className="font-semibold">{totalHours} Saat</span>
+            <span className="font-bold text-slate-800">{totalHours} Saat</span>
           </div>
-          <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-sm font-bold text-slate-900">
+          <div className="flex justify-between items-center text-slate-500">
+            <span>Birim Fiyat:</span>
+            <span>{hourlyPrice} {currency} × {totalHours}</span>
+          </div>
+          <div className="flex justify-between items-center border-t border-slate-200/80 pt-2 text-base font-black text-slate-900">
             <span>Toplam Tutar:</span>
-            <span>{totalPrice} {currency}</span>
+            <span className="text-indigo-600">{totalPrice} {currency}</span>
           </div>
         </div>
 
-        {/* Hata Bildirimi (.NET 400 veya 409 Conflict) */}
+        {/* Hata Bildirimi */}
         {errorMessage && (
-          <div className="flex items-start gap-2 bg-red-50 text-red-700 border border-red-200 p-3 rounded-xl text-xs">
+          <div className="flex items-start gap-2.5 bg-red-50 text-red-700 border border-red-200 p-3.5 rounded-2xl text-xs">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-            <span>{errorMessage}</span>
+            <span className="font-medium">{errorMessage}</span>
           </div>
         )}
 
         {/* Başarı Bildirimi */}
         {isSuccess && (
-          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 rounded-xl text-xs">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span>Rezervasyonunuz başarıyla onaylandı!</span>
+          <div className="flex items-center gap-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 p-3.5 rounded-2xl text-xs font-semibold">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Rezervasyonunuz başarıyla onaylandı! Yönlendiriliyorsunuz...</span>
           </div>
         )}
 
@@ -179,17 +181,24 @@ export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetP
         <button
           type="submit"
           disabled={isLoading || totalHours <= 0}
-          className="w-full py-3 px-4 rounded-xl text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-4 px-4 rounded-2xl text-sm font-bold bg-linear-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/40 cursor-pointer"
         >
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Kontrol Ediliyor...
+              <span>Kontrol Ediliyor...</span>
             </>
           ) : (
-            "Rezervasyonu Tamamla"
+            <span>Rezervasyonu Onayla</span>
           )}
         </button>
+
+        <div className="pt-2 text-center">
+          <span className="inline-flex items-center gap-1 text-[11px] text-slate-400">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            24 saat öncesine kadar ücretsiz iptal güvencesi
+          </span>
+        </div>
       </form>
     </div>
   );
