@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 import { spacesApi } from "../api";
 import { SpaceType, CreateSpacePayload } from "../types";
 import { ApiError } from "@/lib/api-client";
@@ -82,16 +83,22 @@ export function CreateSpaceForm() {
 
     try {
       const createdSpaceId = await spacesApi.create(payload);
+      toast.success("Mekan başarıyla oluşturuldu!");
       router.push(`/spaces/${createdSpaceId}`);
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.errors) {
           setFieldErrors(err.errors);
+          const firstKey = Object.keys(err.errors)[0];
+          toast.error(err.errors[firstKey][0]);
         } else {
           setGeneralError(err.message);
+          toast.error(err.message);
         }
       } else {
-        setGeneralError("Mekan oluşturulurken bir hata meydana geldi.");
+        const msg = "Mekan oluşturulurken bir hata meydana geldi.";
+        setGeneralError(msg);
+        toast.error(msg);
       }
     } finally {
       setIsLoading(false);
@@ -100,12 +107,12 @@ export function CreateSpaceForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {generalError && (
+      {/* {generalError && (
         <div className="flex items-center gap-3 bg-red-50 text-red-700 border border-red-200 p-4 rounded-2xl text-sm font-medium">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
           <span>{generalError}</span>
         </div>
-      )}
+      )} */}
 
       {/* Bölüm 1: Genel Bilgiler */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-sm space-y-6">

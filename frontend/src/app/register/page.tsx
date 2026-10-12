@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-hot-toast";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ApiError } from "@/lib/api-client";
 import { Building2, Lock, Mail, User, Loader2, AlertCircle, ArrowRight } from "lucide-react";
@@ -34,17 +35,23 @@ function RegisterForm() {
         password,
       });
 
+      toast.success("Hesabınız başarıyla oluşturuldu! Yönlendiriliyorsunuz...");
       router.push(redirect);
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.errors) {
           setFieldErrors(err.errors);
+          const firstKey = Object.keys(err.errors)[0];
+          toast.error(err.errors[firstKey][0]);
         } else {
           setGeneralError(err.message);
+          toast.error(err.message);
         }
       } else {
-        setGeneralError("Kayıt işlemi sırasında beklenmeyen bir hata oluştu.");
+        const msg = "Kayıt işlemi sırasında beklenmeyen bir hata oluştu.";
+        setGeneralError(msg);
+        toast.error(msg);
       }
     } finally {
       setIsLoading(false);
@@ -66,12 +73,12 @@ function RegisterForm() {
         </div>
 
         {/* Genel Hata */}
-        {generalError && (
+        {/* {generalError && (
           <div className="mb-6 flex items-start gap-2.5 bg-red-50 text-red-700 border border-red-200 p-3.5 rounded-2xl text-xs font-medium">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
             <span>{generalError}</span>
           </div>
-        )}
+        )} */}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">

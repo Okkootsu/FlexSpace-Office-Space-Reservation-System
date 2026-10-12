@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-hot-toast";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ApiError } from "@/lib/api-client";
 import { Building2, Lock, Mail, Loader2, AlertCircle, ArrowRight } from "lucide-react";
@@ -25,19 +26,21 @@ function LoginForm() {
 
     try {
       await login({ email, password });
+      toast.success("Giriş başarılı! Yönlendiriliyorsunuz...");
       router.push(redirect);
       router.refresh();
     } catch (err) {
+      let msg = "Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.";
       if (err instanceof ApiError) {
         if (err.errors) {
           const firstKey = Object.keys(err.errors)[0];
-          setErrorMessage(err.errors[firstKey][0]);
+          msg = err.errors[firstKey][0];
         } else {
-          setErrorMessage(err.message);
+          msg = err.message;
         }
-      } else {
-        setErrorMessage("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
       }
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -58,12 +61,12 @@ function LoginForm() {
         </div>
 
         {/* Hata Bildirimi */}
-        {errorMessage && (
+        {/* {errorMessage && (
           <div className="mb-6 flex items-center gap-2.5 bg-red-50 text-red-700 border border-red-200 p-3.5 rounded-2xl text-xs font-medium">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
             <span>{errorMessage}</span>
           </div>
-        )}
+        )} */}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">

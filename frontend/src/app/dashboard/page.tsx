@@ -36,6 +36,16 @@ export default function DashboardPage() {
   const activeBookings = bookings.filter((b) => b.status === BookingStatus.Confirmed);
   const cancelledBookings = bookings.filter((b) => b.status === BookingStatus.Cancelled);
 
+  const handleBookingCancelled = (cancelledBookingId: string) => {
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === cancelledBookingId
+          ? { ...b, status: BookingStatus.Cancelled, canBeCancelled: false }
+          : b
+      )
+    );
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
       {/* Üst Bilgi Başlığı */}
@@ -112,6 +122,7 @@ export default function DashboardPage() {
                 <BookingItemCard
                   key={booking.id}
                   booking={booking}
+                  onCancelled={handleBookingCancelled}
                 />
               ))}
             </div>
