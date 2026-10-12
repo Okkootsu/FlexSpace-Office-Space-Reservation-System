@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 import { Booking, BookingStatus } from "../types";
 import { bookingsApi } from "../api";
 import { ApiError } from "@/lib/api-client";
@@ -10,13 +10,13 @@ import { Calendar, Clock, MapPin, AlertCircle, Loader2, ArrowRight, Ban, CheckCi
 
 interface BookingItemCardProps {
   booking: Booking;
-  guestId: string;
+  onCancelled?: (bookingId: string) => void;
 }
 
-export function BookingItemCard({ booking, guestId }: BookingItemCardProps) {
-  const router = useRouter();
+export function BookingItemCard({ booking, onCancelled }: BookingItemCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentStatus, setCurrentStatus] = useState<BookingStatus>(booking.status);
 
   const startDate = new Date(booking.startUtc);
   const endDate = new Date(booking.endUtc);
@@ -38,39 +38,74 @@ export function BookingItemCard({ booking, guestId }: BookingItemCardProps) {
     minute: "2-digit",
   });
 
-  const handleCancel = async () => {
-    const isConfirmed = window.confirm(
-      "Bu rezervasyonu iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz."
-    );
-
-    if (!isConfirmed) return;
-
+  const executeCancel = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      await bookingsApi.cancel(booking.id, guestId);
-      router.refresh();
+      await bookingsApi.cancel(booking.id);
+      setCurrentStatus(BookingStatus.Cancelled);
+      toast.success("Rezervasyonunuz başarıyla iptal edildi.");
+      onCancelled?.(booking.id);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError("İptal işlemi sırasında bir hata oluştu.");
-      }
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : "İptal işlemi sırasında bir hata oluştu.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isCancelled = booking.status === BookingStatus.Cancelled;
+  const handleCancelClick = () => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2.5 py-1 text-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚠️</span>
+            <span className="font-bold text-slate-900 text-xs">Rezervasyonu İptal Et</span>
+          </div>
+          <p className="text-[11px] text-slate-600 leading-relaxed">
+            Bu rezervasyonu iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+          </p>
+          <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => toast.dismiss(t.id)}
+              className="px-2.5 py-1 text-slate-500 hover:text-slate-800 text-xs font-semibold rounded-lg hover:bg-slate-100 transition cursor-pointer"
+            >
+              Vazgeç
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                toast.dismiss(t.id);
+                executeCancel();
+              }}
+              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition shadow-xs cursor-pointer"
+            >
+              Evet, İptal Et
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 8000,
+        position: "top-center",
+      }
+    );
+  };
+
+  const isCancelled = currentStatus === BookingStatus.Cancelled || booking.status === BookingStatus.Cancelled;
 
   return (
     <div
-      className={`bg-white rounded-3xl border p-6 sm:p-7 transition-all duration-200 shadow-sm ${
-        isCancelled
+      className={`bg-white rounded-3xl border p-6 sm:p-7 transition-all duration-200 shadow-sm ${isCancelled
           ? "border-slate-200/80 bg-slate-50/50 opacity-75"
           : "border-slate-200/90 hover:border-indigo-300 hover:shadow-md"
-      }`}
+        }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
@@ -161,7 +196,7 @@ export function BookingItemCard({ booking, guestId }: BookingItemCardProps) {
 
           {booking.canBeCancelled && (
             <button
-              onClick={handleCancel}
+              onClick={handleCancelClick}
               disabled={isLoading}
               type="button"
               className="text-xs font-bold text-red-600 hover:text-white hover:bg-red-600 bg-red-50 px-4 py-2 rounded-xl transition-all border border-red-200 disabled:opacity-50 flex items-center justify-center gap-1.5 self-end sm:self-auto cursor-pointer"

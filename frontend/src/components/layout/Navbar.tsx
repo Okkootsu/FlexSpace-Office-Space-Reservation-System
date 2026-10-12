@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/features/auth/AuthContext";
 import {
   Building2,
   Compass,
@@ -10,12 +11,16 @@ import {
   PlusCircle,
   Menu,
   X,
-  Sparkles,
   User,
+  LogOut,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -23,17 +28,24 @@ export function Navbar() {
       name: "Mekanları Keşfet",
       href: "/spaces",
       icon: Compass,
-      active: pathname === "/spaces" || pathname.startsWith("/spaces/"),
-      isNew: false,
+      active: pathname === "/spaces" || (pathname.startsWith("/spaces/") && pathname !== "/spaces/new"),
     },
     {
       name: "Rezervasyonlarım",
       href: "/dashboard",
       icon: CalendarCheck2,
       active: pathname === "/dashboard",
-      isNew: false,
     },
   ];
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenuOpen(false);
+    router.push("/");
+    router.refresh();
+  };
+
+  const newSpaceHref = isAuthenticated ? "/spaces/new" : "/login?redirect=/spaces/new";
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur-xl transition-all duration-300">
@@ -51,10 +63,6 @@ export function Navbar() {
               <span className="font-black text-xl tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
                 Flex<span className="text-indigo-600">Space</span>
               </span>
-              {/* <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 uppercase tracking-wider">
-                <Sparkles className="w-2.5 h-2.5 text-indigo-600" />
-                Ofis
-              </span> */}
             </div>
             <span className="text-[10px] text-slate-400 font-medium tracking-wide -mt-0.5 hidden sm:block">
               Akıllı Çalışma Alanları
@@ -66,7 +74,7 @@ export function Navbar() {
         <nav className="hidden md:flex items-center gap-1.5 bg-slate-100/70 p-1.5 rounded-2xl border border-slate-200/60">
           {navLinks.map((link) => {
             const Icon = link.icon;
-            const isActive = link.active && !(link.href === "/spaces" && pathname === "/spaces/new");
+            const isActive = link.active;
             return (
               <Link
                 key={link.href}
@@ -84,39 +92,73 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Actions & Profile */}
+        {/* Actions & Profile (Desktop) */}
         <div className="hidden md:flex items-center gap-3">
+          {/* Mekan Ekle butonu daima görünür; giriş yoksa /login?redirect=/spaces/new yönlendirir */}
           <Link
-            href="/spaces/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-md shadow-indigo-600/25 hover:shadow-lg hover:shadow-indigo-600/35 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+            href={newSpaceHref}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-linear-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-md shadow-indigo-600/25 hover:shadow-lg hover:shadow-indigo-600/35 hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Mekan Ekle</span>
           </Link>
 
-          {/* User Profile Mini Badge */}
-          <Link
-            href="/dashboard"
-            title="Profil ve Rezervasyonlarım"
-            className="flex items-center gap-2 p-1.5 pr-3 rounded-full border border-slate-200/80 hover:border-indigo-300 hover:bg-slate-50 transition cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
-              <User className="w-4 h-4" />
-            </div>
-            <div className="text-left text-xs">
-              <div className="font-semibold text-slate-800 leading-tight">Hesabım</div>
-              <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Aktif
-              </div>
-            </div>
-          </Link>
+          {isAuthenticated && user ? (
+            <>
+              {/* Kullanıcı Rozeti & Dashboard */}
+              <Link
+                href="/dashboard"
+                title="Profil ve Rezervasyonlarım"
+                className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full border border-slate-200/80 hover:border-indigo-300 hover:bg-slate-50 transition cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                  {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                </div>
+                <div className="text-left text-xs">
+                  <div className="font-bold text-slate-800 leading-tight max-w-[120px] truncate">
+                    {user.fullName}
+                  </div>
+                  <div className="text-[10px] text-indigo-600 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    {user.role === "Admin" ? "Yönetici" : "Üye"}
+                  </div>
+                </div>
+              </Link>
+
+              {/* Çıkış Yap Butonu */}
+              <button
+                onClick={handleLogout}
+                title="Çıkış Yap"
+                className="p-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition cursor-pointer"
+              >
+                <LogIn className="w-4 h-4 text-slate-400" />
+                <span>Giriş Yap</span>
+              </Link>
+
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm shadow-2xs hover:border-slate-300 transition-all cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4 text-slate-500" />
+                <span>Kayıt Ol</span>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
         <div className="flex md:hidden items-center gap-2">
           <Link
-            href="/spaces/new"
+            href={newSpaceHref}
             className="p-2 rounded-xl bg-indigo-600 text-white shadow-xs cursor-pointer"
             aria-label="Mekan Ekle"
           >
@@ -139,7 +181,7 @@ export function Navbar() {
           <div className="space-y-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = link.active && !(link.href === "/spaces" && pathname === "/spaces/new");
+              const isActive = link.active;
               return (
                 <Link
                   key={link.href}
@@ -160,7 +202,7 @@ export function Navbar() {
 
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
             <Link
-              href="/spaces/new"
+              href={newSpaceHref}
               onClick={() => setMobileMenuOpen(false)}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm shadow-md cursor-pointer hover:bg-indigo-700 transition"
             >
@@ -168,14 +210,45 @@ export function Navbar() {
               <span>Mekanını Listele</span>
             </Link>
 
-            <Link
-              href="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-medium text-sm hover:bg-slate-50 transition cursor-pointer"
-            >
-              <User className="w-4 h-4 text-slate-500" />
-              <span>Hesap ve Rezervasyonlar</span>
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+                    {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-800">{user.fullName}</div>
+                    <div className="text-[10px] text-slate-500">{user.email} ({user.role === "Admin" ? "Yönetici" : "Üye"})</div>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-slate-400 hover:text-red-600 transition"
+                  title="Çıkış Yap"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition"
+                >
+                  <LogIn className="w-4 h-4 text-slate-500" />
+                  <span>Giriş Yap</span>
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Kayıt Ol</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

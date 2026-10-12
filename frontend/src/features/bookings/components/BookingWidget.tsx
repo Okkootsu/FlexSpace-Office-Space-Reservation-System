@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, AlertCircle, CheckCircle2, Loader2, Zap, ShieldCheck } from "lucide-react";
+import { Calendar, Clock, AlertCircle, CheckCircle2, Loader2, Zap, ShieldCheck, LogIn, UserCheck } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { bookingsApi } from "../api";
 import { ApiError } from "@/lib/api-client";
+import { useAuth } from "@/features/auth/AuthContext";
 
 interface BookingWidgetProps {
   spaceId: string;
@@ -14,6 +16,7 @@ interface BookingWidgetProps {
 
 export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetProps) {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
 
   // Varsayılan tarih olarak yarın seçiliyor
   const tomorrow = new Date();
@@ -41,48 +44,52 @@ export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setErrorMessage(null);
-    setIsSuccess(false);
 
     if (totalHours <= 0) {
       setErrorMessage("Bitiş saati başlangıç saatinden sonra olmalıdır.");
-      setIsLoading(false);
       return;
     }
+
+    // Guest-first UX: Giriş yapmamışsa login sayfasına yönlendir
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/spaces/${spaceId}`);
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    setIsSuccess(false);
 
     try {
       // ISO UTC String dönüşümü
       const startUtc = new Date(`${date}T${startTime}:00Z`).toISOString();
       const endUtc = new Date(`${date}T${endTime}:00Z`).toISOString();
 
-      // Mock guestId
-      const guestId = "22222222-2222-2222-2222-222222222222";
-
       await bookingsApi.create({
         spaceId,
-        guestId,
         startUtc,
         endUtc,
       });
 
       setIsSuccess(true);
+      toast.success("Rezervasyonunuz başarıyla onaylandı!");
       setTimeout(() => {
         router.push("/dashboard");
       }, 1500);
     } catch (err) {
+      let msg = "Rezervasyon yapılırken beklenmeyen bir hata oluştu.";
       if (err instanceof ApiError) {
         if (err.errors) {
           // FluentValidation alan hataları
           const firstKey = Object.keys(err.errors)[0];
-          setErrorMessage(err.errors[firstKey][0]);
+          msg = err.errors[firstKey][0];
         } else {
           // 409 Conflict veya iş kuralı hatası
-          setErrorMessage(err.message);
+          msg = err.message;
         }
-      } else {
-        setErrorMessage("Rezervasyon yapılırken beklenmeyen bir hata oluştu.");
       }
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -162,18 +169,26 @@ export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetP
         </div>
 
         {/* Hata Bildirimi */}
-        {errorMessage && (
-          <div className="flex items-start gap-2.5 bg-red-50 text-red-700 border border-red-200 p-3.5 rounded-2xl text-xs">
+        {/* {errorMessage && (
+          <div className="flex items-center gap-2.5 bg-red-50 text-red-700 border border-red-200 p-3.5 rounded-2xl text-xs">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
             <span className="font-medium">{errorMessage}</span>
           </div>
-        )}
+        )} */}
 
         {/* Başarı Bildirimi */}
-        {isSuccess && (
+        {/* {isSuccess && (
           <div className="flex items-center gap-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200 p-3.5 rounded-2xl text-xs font-semibold">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>Rezervasyonunuz başarıyla onaylandı! Yönlendiriliyorsunuz...</span>
+          </div>
+        )} */}
+
+        {/* Kullanıcı Giriş Durumu Bilgisi */}
+        {isAuthenticated && user && (
+          <div className="flex items-center gap-2 py-1 px-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-[11px] text-indigo-700 font-medium">
+            <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
+            <span><strong>{user.fullName}</strong> olarak rezervasyon yapıyorsunuz</span>
           </div>
         )}
 
@@ -187,6 +202,11 @@ export function BookingWidget({ spaceId, hourlyPrice, currency }: BookingWidgetP
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
               <span>Kontrol Ediliyor...</span>
+            </>
+          ) : !isAuthenticated ? (
+            <>
+              <LogIn className="w-4 h-4" />
+              <span>Giriş Yap ve Rezerve Et</span>
             </>
           ) : (
             <span>Rezervasyonu Onayla</span>

@@ -13,9 +13,6 @@ namespace FlexSpace.Application.Features.Bookings.Commands.CreateBooking
             RuleFor(x => x.SpaceId)
                 .NotEmpty().WithMessage("Mekan ID boş olamaz.");
 
-            RuleFor(x => x.GuestId)
-                .NotEmpty().WithMessage("kullanıcı ID boş olamaz.");
-
             RuleFor(x => x.StartUtc)
                 .GreaterThan(DateTime.UtcNow).WithMessage("Rezervasyon başlangıç zamanı gelecekte bir tarihte olmalıdır.");
             

@@ -61,6 +61,15 @@ namespace FlexSpace.WebApi.Middlewares
                         Detail = "Bir veya daha fazla doğrulama hatası meydana geldi."
                     }
                 ),
+                UnauthorizedAccessException unauthEx => (
+                    (int)HttpStatusCode.Unauthorized,
+                    new ProblemDetails
+                    {
+                        Status = (int)HttpStatusCode.Unauthorized,
+                        Title = "Unauthorized",
+                        Detail = unauthEx.Message
+                    }
+                ),
                 InvalidOperationException opEx => (
                     (int)HttpStatusCode.Conflict,
                     new ProblemDetails

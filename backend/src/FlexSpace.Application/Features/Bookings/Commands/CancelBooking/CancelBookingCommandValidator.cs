@@ -12,9 +12,6 @@ namespace FlexSpace.Application.Features.Bookings.Commands.CancelBooking
         {
             RuleFor(x => x.BookingId)
                 .NotEmpty().WithMessage("Rezervasyon ID boş olamaz.");
-
-            RuleFor(x => x.GuestId)
-                .NotEmpty().WithMessage("Kullanıcı ID boş olamaz.");
         }
     }
 }

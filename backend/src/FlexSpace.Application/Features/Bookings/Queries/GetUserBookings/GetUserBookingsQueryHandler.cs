@@ -10,15 +10,21 @@ namespace FlexSpace.Application.Features.Bookings.Queries.GetUserBookings
     public class GetUserBookingsQueryHandler : IRequestHandler<GetUserBookingsQuery, IReadOnlyList<BookingDto>>
     {
         private readonly IBookingQueryService _bookingQueryService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public GetUserBookingsQueryHandler(IBookingQueryService bookingQueryService)
+        public GetUserBookingsQueryHandler(IBookingQueryService bookingQueryService, ICurrentUserService currentUserService)
         {
             _bookingQueryService = bookingQueryService;
+            _currentUserService = currentUserService;
         }
 
         public async Task<IReadOnlyList<BookingDto>> Handle(GetUserBookingsQuery request, CancellationToken cancellationToken)
         {
-            return await _bookingQueryService.GetUserBookingsAsync(request.GuestId, cancellationToken);
+            var guestId = request.GuestId 
+                ?? _currentUserService.UserId 
+                ?? throw new UnauthorizedAccessException("Rezervasyonlarınızı görüntülemek için geçerli bir oturum açmalısınız.");
+
+            return await _bookingQueryService.GetUserBookingsAsync(guestId, cancellationToken);
         }
     }
 }

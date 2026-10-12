@@ -6,5 +6,5 @@ using MediatR;
 
 namespace FlexSpace.Application.Features.Bookings.Queries.GetUserBookings
 {
-    public record GetUserBookingsQuery(Guid GuestId) : IRequest<IReadOnlyList<BookingDto>>;
+    public record GetUserBookingsQuery(Guid? GuestId = null) : IRequest<IReadOnlyList<BookingDto>>;
 }

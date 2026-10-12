@@ -10,9 +10,6 @@ namespace FlexSpace.Application.Features.Spaces.Commands.CreateSpace
     {
         public CreateSpaceCommandValidator()
         {
-            RuleFor(x => x.HostId)
-                .NotEmpty().WithMessage("Host kimliği boş olamaz.");
-
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Mekan başlığı zorunludur.")
                 .MaximumLength(150).WithMessage("Mekan başlığı en fazla 150 karakter olabilir.");
