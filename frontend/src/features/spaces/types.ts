@@ -25,7 +25,7 @@ export interface GetSpacesParams {
 }
 
 export interface CreateSpacePayload {
-  hostId: string;
+  hostId?: string;
   title: string;
   description: string;
   type: SpaceType;

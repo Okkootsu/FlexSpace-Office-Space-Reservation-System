@@ -8,7 +8,6 @@ using MediatR;
 namespace FlexSpace.Application.Features.Spaces.Commands
 {
     public record CreateSpaceCommand(
-        Guid HostId,
         string Title,
         string Description,
         SpaceType Type,

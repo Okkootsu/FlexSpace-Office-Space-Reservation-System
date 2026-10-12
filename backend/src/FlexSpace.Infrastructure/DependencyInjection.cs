@@ -27,6 +27,11 @@ namespace FlexSpace.Infrastructure
             services.AddScoped<ISpaceQueryService, SpaceQueryService>();
             services.AddScoped<IBookingRepository, BookingRepository>();
             services.AddScoped<IBookingQueryService, BookingQueryService>();
+            services.AddScoped<IUserRepository, UserRepository>();
+
+            // Güvenlik servisleri
+            services.AddSingleton<IPasswordHasher, FlexSpace.Infrastructure.Services.PasswordHasher>();
+            services.AddSingleton<IJwtTokenGenerator, FlexSpace.Infrastructure.Services.JwtTokenGenerator>();
 
             return services;
         }

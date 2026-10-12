@@ -7,7 +7,6 @@ using MediatR;
 namespace FlexSpace.Application.Features.Bookings.Commands.CancelBooking
 {
     public record CancelBookingCommand(
-        Guid BookingId,
-        Guid GuestId
+        Guid BookingId
     ) : IRequest;
 }

@@ -1,6 +1,5 @@
 export interface CreateBookingPayload {
   spaceId: string;
-  guestId: string;
   startUtc: string; // ISO String
   endUtc: string;
 }
@@ -25,11 +24,4 @@ export interface Booking {
   currency: string;
   status: BookingStatus;
   canBeCancelled: boolean;
-}
-
-export interface CreateBookingPayload {
-  spaceId: string;
-  guestId: string;
-  startUtc: string;
-  endUtc: string;
 }

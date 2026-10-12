@@ -72,11 +72,7 @@ export function CreateSpaceForm() {
     setGeneralError(null);
     setFieldErrors({});
 
-    // Mock GUID
-    const hostId = "11111111-1111-1111-1111-111111111111";
-
     const payload: CreateSpacePayload = {
-      hostId,
       ...formData,
       type: Number(formData.type) as SpaceType,
       capacity: Number(formData.capacity),

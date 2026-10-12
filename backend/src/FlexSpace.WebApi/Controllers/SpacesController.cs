@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FlexSpace.Application.Features.Spaces.Commands;
 using FlexSpace.Application.Features.Spaces.Queries.GetSpaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlexSpace.WebApi.Controllers
@@ -21,8 +22,10 @@ namespace FlexSpace.WebApi.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Create([FromBody] CreateSpaceCommand command, CancellationToken cancellationToken)
         {
             var spaceId = await _mediator.Send(command, cancellationToken);

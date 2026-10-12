@@ -13,17 +13,26 @@ namespace FlexSpace.Application.Features.Bookings.Commands.CreateBooking
     {
         private readonly IBookingRepository _bookingRepository;
         private readonly ISpaceRepository _spaceRepository;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CreateBookingCommandHandler(IBookingRepository bookingRepository, ISpaceRepository spaceRepository, IUnitOfWork unitOfWork)
+        public CreateBookingCommandHandler(
+            IBookingRepository bookingRepository,
+            ISpaceRepository spaceRepository,
+            ICurrentUserService currentUserService,
+            IUnitOfWork unitOfWork)
         {
             _bookingRepository = bookingRepository;
             _spaceRepository = spaceRepository;
+            _currentUserService = currentUserService;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Guid> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
         {
+            var guestId = _currentUserService.UserId
+                ?? throw new UnauthorizedAccessException("Rezervasyon yapmak için geçerli bir oturum açmalısınız.");
+
             var space = await _spaceRepository.GetByIdAsync(request.SpaceId, cancellationToken);
             if (space == null || !space.IsActive)
             {
@@ -40,7 +49,7 @@ namespace FlexSpace.Application.Features.Bookings.Commands.CreateBooking
 
             var booking = Booking.Create(
                 spaceId: request.SpaceId,
-                guestId: request.GuestId,
+                guestId: guestId,
                 timeRange: requestedRange,
                 hourlyPrice: space.HourlyPrice
             );

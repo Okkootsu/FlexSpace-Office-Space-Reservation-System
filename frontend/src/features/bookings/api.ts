@@ -9,14 +9,14 @@ export const bookingsApi = {
     });
   },
 
-  getMyBookings: (guestId: string): Promise<Booking[]> => {
-    return apiClient<Booking[]>(`/bookings/my-bookings?guestId=${guestId}`, {
+  getMyBookings: (): Promise<Booking[]> => {
+    return apiClient<Booking[]>("/bookings/my-bookings", {
       cache: "no-store",
     });
   },
 
-  cancel: (bookingId: string, guestId: string): Promise<void> => {
-    return apiClient<void>(`/bookings/${bookingId}/cancel?guestId=${guestId}`, {
+  cancel: (bookingId: string): Promise<void> => {
+    return apiClient<void>(`/bookings/${bookingId}/cancel`, {
       method: "DELETE",
     });
   },

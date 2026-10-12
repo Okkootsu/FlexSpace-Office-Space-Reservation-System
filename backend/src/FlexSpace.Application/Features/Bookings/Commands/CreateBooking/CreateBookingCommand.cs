@@ -8,7 +8,6 @@ namespace FlexSpace.Application.Features.Bookings.Commands.CreateBooking
 {
     public record CreateBookingCommand(
         Guid SpaceId, 
-        Guid GuestId,
         DateTime StartUtc,
         DateTime EndUtc
         ) : IRequest<Guid>;

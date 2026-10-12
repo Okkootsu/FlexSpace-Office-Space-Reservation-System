@@ -10,10 +10,9 @@ import { Calendar, Clock, MapPin, AlertCircle, Loader2, ArrowRight, Ban, CheckCi
 
 interface BookingItemCardProps {
   booking: Booking;
-  guestId: string;
 }
 
-export function BookingItemCard({ booking, guestId }: BookingItemCardProps) {
+export function BookingItemCard({ booking }: BookingItemCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +48,7 @@ export function BookingItemCard({ booking, guestId }: BookingItemCardProps) {
     setError(null);
 
     try {
-      await bookingsApi.cancel(booking.id, guestId);
+      await bookingsApi.cancel(booking.id);
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError) {

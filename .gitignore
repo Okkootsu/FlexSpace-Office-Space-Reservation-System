@@ -39,3 +39,7 @@ dist/
 ## OS Specific
 .DS_Store
 Thumbs.db
+
+## Others
+.agent/
+.agent/*
